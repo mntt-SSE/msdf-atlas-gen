@@ -9,6 +9,7 @@ option(MSDF_ATLAS_NO_ARTERY_FONT "Disable Artery Font export and do not require 
 option(MSDF_ATLAS_MSDFGEN_EXTERNAL "Do not build the msdfgen submodule but find it as an external package" OFF)
 option(MSDF_ATLAS_INSTALL "Generate installation target" OFF)
 option(MSDF_ATLAS_DYNAMIC_RUNTIME "Link dynamic runtime library instead of static" OFF)
+option(MSDF_ATLAS_DISABLE_PNG "Disable PNG support" OFF)
 option(BUILD_SHARED_LIBS "Generate dynamic library files instead of static" OFF)
 
 if(NOT MSDF_ATLAS_MSDFGEN_EXTERNAL)
@@ -82,7 +83,7 @@ else()
     add_subdirectory(msdfgen)
 endif()
 find_package(Threads REQUIRED)
-if(NOT TARGET PNG::PNG)
+if(NOT MSDF_ATLAS_DISABLE_PNG AND NOT TARGET PNG::PNG)
     find_package(PNG REQUIRED)
 endif()
 
@@ -113,7 +114,10 @@ endif()
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT msdf-atlas-gen)
 
 target_compile_features(msdf-atlas-gen PUBLIC cxx_std_11)
-target_link_libraries(msdf-atlas-gen PRIVATE Threads::Threads PNG::PNG)
+target_link_libraries(msdf-atlas-gen PRIVATE Threads::Threads)
+if (NOT MSDF_ATLAS_DISABLE_PNG)
+    target_link_libraries(msdf-atlas-gen PRIVATE PNG::PNG)
+endif()
 target_link_libraries(msdf-atlas-gen PUBLIC msdfgen::msdfgen)
 
 if(BUILD_SHARED_LIBS AND WIN32)
